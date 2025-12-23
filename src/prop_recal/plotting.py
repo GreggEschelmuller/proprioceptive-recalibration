@@ -39,23 +39,27 @@ plt.rcParams.update({
 })
 
 
-def plot_mean_with_ci(
+def plot_value_with_ci(
     summary: pd.DataFrame,
     *,
     block_col: str = "block",
     block_order: list[str],
     trials_per_block: int = 100,
-    y_label: str = "Error (deg)",
+    y_label: str = "Value",
     x_label: str = "Trial (concatenated across blocks)",
     title: str | None = None,
     out_path: Path | None = None,
     dpi: int = 300,
     x_col: str | None = None,
+    y_col: str = "mean",
+    ci_lo_col: str = "ci_lo",
+    ci_hi_col: str = "ci_hi",
     alpha_band: float = 0.4,
     bin_number: int | None = None,
+    figsize: tuple[float, float] = (8, 5),
 ):
     """
-    Plot mean +/- CI bands from a summary DataFrame.
+    Plot a value +/- CI bands from a summary DataFrame.
 
     Supports both:
       - single-trial summaries (default x = "_global_trial")
@@ -64,10 +68,14 @@ def plot_mean_with_ci(
     Parameters
     ----------
     summary : pd.DataFrame
-        Must contain columns: mean, ci_lo, ci_hi, block_col, and an x column.
+        Must contain columns: y_col, ci_lo_col, ci_hi_col, block_col, and an x column.
     x_col : str | None
-        Which column to use for the x-axis.
-        - If None, uses "_global_trial" if present, else "_global_trial_center" if present.
+        If None, uses "_global_trial" if present, else "_global_trial_center" if present.
+    y_col, ci_lo_col, ci_hi_col : str
+        Columns to plot for the metric and its CI.
+        Examples:
+          - mean error: y_col="mean", ci_lo_col="ci_lo", ci_hi_col="ci_hi"
+          - within-subject VE: y_col="ve_mean", ci_lo_col="ve_ci_lo", ci_hi_col="ve_ci_hi"
     """
     # Decide x column automatically if not provided
     if x_col is None:
@@ -81,12 +89,12 @@ def plot_mean_with_ci(
                 "x_col='_global_trial' or x_col='_global_trial_center'."
             )
 
-    required = {x_col, "mean", "ci_lo", "ci_hi", block_col}
+    required = {x_col, y_col, ci_lo_col, ci_hi_col, block_col}
     missing = required - set(summary.columns)
     if missing:
         raise KeyError(f"summary missing columns: {sorted(missing)}")
 
-    fig, ax = plt.subplots(figsize=(8, 5))
+    fig, ax = plt.subplots(figsize=figsize)
 
     for block in block_order:
         sub = summary[summary[block_col] == block].sort_values(x_col)
@@ -94,14 +102,14 @@ def plot_mean_with_ci(
             continue
 
         x = sub[x_col].to_numpy()
-        y = sub["mean"].to_numpy()
-        lo = sub["ci_lo"].to_numpy()
-        hi = sub["ci_hi"].to_numpy()
+        y = sub[y_col].to_numpy()
+        lo = sub[ci_lo_col].to_numpy()
+        hi = sub[ci_hi_col].to_numpy()
 
         ax.plot(x, y, label=str(block))
         ax.fill_between(x, lo, hi, alpha=alpha_band)
 
-    # Block boundaries on the concatenated axis still make sense for both single-trial and binned.
+    # Block boundaries (still meaningful on concatenated axis)
     for i in range(1, len(block_order)):
         ax.axvline(i * trials_per_block + 0.5, linestyle="--", linewidth=1)
 
@@ -116,12 +124,8 @@ def plot_mean_with_ci(
 
     if out_path is not None:
         out_path = Path(out_path)
-
-        # append _n{bin_number} before suffix
-        out_path = out_path.with_name(
-            f"{out_path.stem}_n{bin_number}{out_path.suffix}"
-        )
-
+        if bin_number is not None:
+            out_path = out_path.with_name(f"{out_path.stem}_n{bin_number}{out_path.suffix}")
         out_path.parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(out_path, dpi=dpi)
 

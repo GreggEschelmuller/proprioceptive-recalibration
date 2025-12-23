@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 from prop_recal.io import load_all_participants_block_summaries  
 from prop_recal.preprocess import apply_filters
-from prop_recal.plotting import plot_mean_with_ci
+from prop_recal.plotting import plot_value_with_ci
 from prop_recal.stats import summarize_mean_ci_by_trial_bin
 
 
@@ -38,7 +38,7 @@ def run(cfg: dict) -> pd.DataFrame:
         bin_size=cfg['bin_size'],
     )
 
-    plot_mean_with_ci(
+    plot_value_with_ci(
         summary,
         block_col="block",
         block_order=cfg["blocks"],

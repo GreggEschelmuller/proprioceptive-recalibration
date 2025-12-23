@@ -34,106 +34,79 @@ def bootstrap_mean_ci(
 
     return lo, hi
 
-def summarize_mean_ci_by_trial_bin(
-    df: pd.DataFrame,
-    *,
-    error_col: str = "error",
-    trial_col: str = "trial",
-    block_col: str = "block",
-    participant_col: str = "participant",
-    block_order: list[str],
-    trials_per_block: int = 100,
-    bin_size: int = 5,
-    n_boot: int = 10_000,
-    ci_level: float = 0.95,
-    seed: int = 0,
+
+def prepare_binned_data(
+        df: pd.DataFrame,
+        *,
+        trial_col: str,
+        block_col: str,
+        participant_col: str,
+        block_order: list[str],
+        trials_per_block: int,
+        bin_size: int,
 ) -> pd.DataFrame:
-    """
-    Compute mean error and bootstrap CIs across participants for binned trials.
-
-    Bins are non-overlapping windows on the concatenated trial axis:
-      e.g., if bin_size=5 => 1–5, 6–10, 11–15, ...
-
-    Returns columns:
-      - _trial_bin (int)          # bin index on concatenated axis (1-based bins)
-      - _global_trial_center (float)  # x-value to plot (center of the bin)
-      - <block_col>
-      - mean
-      - ci_lo
-      - ci_hi
-      - n                         # participants contributing (non-NaN bin means)
-    """
-    # ---- validation ----
-    for col in (error_col, trial_col, block_col, participant_col):
+    for col in (trial_col, block_col, participant_col):
         if col not in df.columns:
             raise KeyError(f"Missing required column '{col}'")
-
-    if not block_order:
+    if not block_order
         raise ValueError("block_order must be non-empty")
-
     if bin_size <= 0:
         raise ValueError("bin_size must be > 0")
-
-    # ---- filter blocks + enforce order ----
+    
     work = df[df[block_col].isin(block_order)].copy()
     work[block_col] = pd.Categorical(work[block_col], categories=block_order, ordered=True)
 
-    # ---- build concatenated trial axis ----
     block_to_idx = {b: i for i, b in enumerate(block_order)}
     work["_block_idx"] = work[block_col].map(block_to_idx).astype("int64")
 
     work[trial_col] = pd.to_numeric(work[trial_col], errors="raise").astype("int64")
-    work["_global_trial"] = work["_block_idx"] * trials_per_block + work[trial_col]
+    work["_global_trial"] = work["_block_idx"] * trials_per_block + work[trial_col]]
 
-    # ---- define non-overlapping bins on the concatenated axis ----
-    # If trials are 1-based: 1..5 -> bin 1, 6..10 -> bin 2, ...
     work["_trial_bin"] = ((work["_global_trial"] - 1) // bin_size + 1).astype("int64")
-
-    # x-coordinate (center of the bin)
     work["_global_trial_center"] = (work["_trial_bin"] - 1) * bin_size + (bin_size + 1) / 2
 
-    # ---- within each participant and bin, average errors ----
-    pt_bin = (
-        work.groupby(
-            [participant_col, "_trial_bin", "_global_trial_center", block_col],
-            observed=True,
-        )[error_col]
-        .mean()  # mean within participant across trials in the bin (NaNs ignored)
-        .reset_index()
-    )
+    return work
 
+def summarize_value_with_boot_ci(
+        pt: pd.DataFrame,
+        *,
+        value_col: str,
+        block_col: str,
+        n_boot: int,
+        ci_level: float,
+        seed: int,
+        out_prefix: str,
+) -> pd.DataFrame:
+    required = {"_trial_bin", "_global_trial_center", block_col, value_col}
+    missing = required - set(pt.columns)
+    if missing:
+        raise KeyError(f"pt missing columns: {sorted(missing)}")
+    
     rng = np.random.default_rng(seed)
     rows: list[dict] = []
 
-    # ---- across participants, compute mean + bootstrap CI per bin ----
-    for (tbin, center, block), sub in pt_bin.groupby(
+    for (tbin, center, block), sub in pt.groupby(
         ["_trial_bin", "_global_trial_center", block_col],
         observed=True,
     ):
-        values = sub[error_col].to_numpy(dtype=float)
+        vals = sub[value_col].to_numpy(dtype=float)
 
-        mean = np.nanmean(values)
-        ci_lo, ci_hi = bootstrap_mean_ci(
-            values,
-            n_boot=n_boot,
-            ci=ci_level,
-            rng=rng,
-        )
-
+        m = np.nanmean(vals)
+        lo, hi = bootstrap_mean_ci(vals, n_boot=n_boot, ci=ci_level, rng=rng)
         rows.append(
             {
                 "_trial_bin": int(tbin),
                 "_global_trial_center": float(center),
                 block_col: block,
-                "mean": float(mean),
-                "ci_lo": float(ci_lo),
-                "ci_hi": float(ci_hi),
-                "n": int(np.sum(~np.isnan(values))),
+                f"{out_prefix}_mean": float(m),
+                f"{out_prefix}_ci_lo": float(lo),
+                f"{out_prefix}_ci_hi": float(hi),
+                f"n_{out_prefix}": int(np.sum(~np.isnan(vals))),
             }
         )
+        return (
+            pd.DataFrame(rows).sort_values(_"global_trial_center").reset_index(drop=True)
+        )
 
-    return (
-        pd.DataFrame(rows)
-        .sort_values("_global_trial_center")
-        .reset_index(drop=True)
-    )
+def summarize_mean_ci
+
