@@ -1,0 +1,70 @@
+# =========================
+# Data (NEVER COMMIT DATA)
+# =========================
+data/
+**/data/
+**/raw/
+**/processed/
+**/interim/
+**/external/
+
+# =========================
+# Outputs / Results
+# =========================
+outputs/
+reports/figures/
+**/figures/
+*.png
+*.pdf
+*.svg
+
+# =========================
+# Python build artifacts
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# =========================
+# Virtual environments
+# =========================
+.venv/
+venv/
+env/
+
+# =========================
+# uv / packaging
+# =========================
+uv.lock
+*.egg-info/
+dist/
+build/
+
+# =========================
+# Jupyter / IPython
+# =========================
+.ipynb_checkpoints/
+.profile_default/
+.ipython/
+
+# =========================
+# Editor / OS junk
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Secrets / local configs
+# =========================
+.env
+.env.*
+*.key
+*.pem

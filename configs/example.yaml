@@ -1,0 +1,3 @@
+run_name: example
+input_csv: data/raw/numbers.csv
+output_dir: reports/figures
