@@ -35,11 +35,15 @@ def block_summary_path(data_dir: Path, participant: int, block: str) -> Path:
     return data_dir / f"p{participant}" / f"p{participant}_{block}.csv"
 
 
-def load_all_block_summaries(data_dir: Path, participant: int, blocks: list[str]) -> pd.DataFrame:
+def load_all_block_summaries(
+    data_dir: Path,
+    participant: int,
+    blocks: list[str],
+) -> pd.DataFrame:
     """
     Loads all block summary CSVs for a participant and concatenates them into one DataFrame.
 
-    Adds 'participant' and 'block' columns for provenance (strongly recommended).
+    Adds 'participant' and 'block' columns for provenance.
     """
     dfs: list[pd.DataFrame] = []
 
@@ -47,8 +51,11 @@ def load_all_block_summaries(data_dir: Path, participant: int, blocks: list[str]
         path = block_summary_path(data_dir, participant, block)
         df = load_block_summary_csv(path)
 
-        # Provenance columns (you will thank yourself later)
-        df.insert(0, "participant", participant)
+        # Provenance column: participant (robust to schema drift)
+        if "participant" in df.columns:
+            df["participant"] = participant
+        else:
+            df.insert(0, "participant", participant)
 
         dfs.append(df)
 
@@ -56,6 +63,7 @@ def load_all_block_summaries(data_dir: Path, participant: int, blocks: list[str]
         raise ValueError("No blocks provided (blocks list is empty).")
 
     return pd.concat(dfs, ignore_index=True)
+    
 
 def load_all_participants_block_summaries(data_dir: Path, participants: list[int], blocks: list[str],) -> pd.DataFrame:
     """

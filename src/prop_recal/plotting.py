@@ -34,8 +34,8 @@ plt.rcParams.update({
     'legend.frameon': False,      # Remove the box around the legend
     
     # Output resolution
-    'figure.dpi': 300,            # High resolution for screen display
-    'savefig.dpi': 300,           # High resolution for saved images
+    'figure.dpi': 600,            # High resolution for screen display
+    'savefig.dpi': 600,           # High resolution for saved images
 })
 
 
@@ -48,8 +48,9 @@ def plot_value_with_ci(
     y_label: str = "Value",
     x_label: str = "Trial (concatenated across blocks)",
     title: str | None = None,
+    ylim: tuple[float] | None = None, 
     out_path: Path | None = None,
-    dpi: int = 300,
+    dpi: int = 600,
     x_col: str | None = None,
     y_col: str = "mean",
     ci_lo_col: str = "ci_lo",
@@ -112,13 +113,16 @@ def plot_value_with_ci(
     # Block boundaries (still meaningful on concatenated axis)
     for i in range(1, len(block_order)):
         ax.axvline(i * trials_per_block + 0.5, linestyle="--", linewidth=1)
-
+    if ylim:
+        ax.set_ylim(ylim)
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     ax.legend(title=block_col)
 
     if title:
         ax.set_title(title)
+
+    sns.despine()
 
     fig.tight_layout()
 
@@ -130,3 +134,9 @@ def plot_value_with_ci(
         fig.savefig(out_path, dpi=dpi)
 
     return fig, ax
+
+
+
+
+
+
