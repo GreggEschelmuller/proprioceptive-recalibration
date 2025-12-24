@@ -3,23 +3,16 @@ from __future__ import annotations
 from pathlib import Path
 import pandas as pd
 
-from prop_recal.plotting import plot_recalibration  # you’ll write
-from prop_recal.plotting import save_figure_multi_format  # you already have
-from prop_recal.recalibration import summarize_recalibration_two_blocks  # you’ll write
+from prop_recal.stats import summarize_recalibration_two_blocks
+from prop_recal.plotting import plot_recalibration
+from prop_recal.plotting import save_figure_multi_format
 
 
 def run_recalibration_first_n(df: pd.DataFrame, *, cfg: dict) -> pd.DataFrame:
-    """
-    Compute recalibration summary (first N trials in two blocks) and save figure(s).
-    Returns participant-level table.
-    """
-    recal_cfg = cfg.get("recalibration", {})
+    recal_cfg = cfg["recalibration"]          # required
     outputs_cfg = cfg.get("outputs", {})
 
-    if not recal_cfg.get("enabled", False):
-        return pd.DataFrame()
-
-    block_a, block_b = recal_cfg["blocks"]  # require exactly two names
+    block_a, block_b = recal_cfg["blocks"]    # required: [a, b]
     n = int(recal_cfg.get("first_n", 5))
     min_valid = int(recal_cfg.get("min_valid", n))
 
@@ -35,30 +28,35 @@ def run_recalibration_first_n(df: pd.DataFrame, *, cfg: dict) -> pd.DataFrame:
         min_valid=min_valid,
     )
 
-    # ---- save subject-level table (optional) ----
+    fig_recal, ax_recal = plot_recalibration(
+        df_subj,
+        block_a_label="Baseline",
+        block_b_label="Post",
+        title="Recalibration",
+        n_boot=cfg["trial_plot"]["n_boot"],
+        ci_level=cfg["trial_plot"]["ci_level"],
+        seed=cfg.get("seed", 0),
+    )
+
+    # ---- save recalibration figure ----
+    recal_fig_path = outputs_cfg.get(
+        "fig_path_recal",
+        "outputs/figures/recalibration_first5"
+    )
+
+    save_figure_multi_format(
+        fig_recal,
+        base_path=Path(recal_fig_path),
+        formats=outputs_cfg.get("fig_formats", ["png"]),
+        dpi=outputs_cfg.get("dpi", 300),
+    )
+
+    # Save subject-level table so you can verify immediately
     out_csv = outputs_cfg.get("out_csv_recal")
     if out_csv:
         out_csv = Path(out_csv)
         out_csv.parent.mkdir(parents=True, exist_ok=True)
         df_subj.to_csv(out_csv, index=False, na_rep="NaN")
         print(f"Saved: {out_csv}")
-
-    # ---- plot (optional) ----
-    fig_base = outputs_cfg.get("fig_path_recal")  # no suffix
-    if fig_base:
-        fig, _ = plot_recalibration(
-            df_subj,
-            block_a_label=recal_cfg.get("block_a_label", block_a),
-            block_b_label=recal_cfg.get("block_b_label", block_b),
-            title=recal_cfg.get("title", None),
-        )
-
-        save_figure_multi_format(
-            fig,
-            base_path=Path(fig_base),
-            formats=outputs_cfg.get("fig_formats", ["png"]),
-            dpi=int(outputs_cfg.get("dpi", 300)),
-            bin_number=None,
-        )
 
     return df_subj

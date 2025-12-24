@@ -29,10 +29,10 @@ bin_size: 5
 seed: 0
 
 filters:
-  max_abs_error_deg: 30
+  max_abs_error_deg: 100
   mean_velocity:
     lower: 20
-    upper: 100
+    upper: 120
 
   invalidate_conditions:
     - when:
@@ -51,8 +51,24 @@ trial_plot:
 
 vib_trials_nf: 15
 
+
+recalibration:
+  # Compare first N trials of these two blocks (use names, not indices)
+  blocks: ["Baseline", "Post"]
+  first_n: 5
+  min_valid: 3
+
+  # Tell the function which columns to use (defaults shown explicitly)
+  participant_col: "participant"
+  block_col: "block"
+  trial_col: "trial_num"
+  value_col: "error"
+
 outputs:
   out_csv: "outputs/vibration_target_all_participants.csv"
+  out_csv_recal: "outputs/vibration_target_pre_post_error.csv"
   fig_path_mean: "outputs/figures/vibration_target_mean_error"
   fig_path_ve: "outputs/figures/vibration_target_ve"
+  fig_path_recal: "outputs/figures/vibration_target_recal"
   fig_formats: ["png", "svg"]
+

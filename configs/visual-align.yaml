@@ -48,8 +48,22 @@ trial_plot:
 # study-specific parameter (keep if used elsewhere)
 vib_trials_nf: 15
 
+recalibration:
+  # Compare first N trials of these two blocks (use names, not indices)
+  blocks: ["nf_baseline", "post"]
+  first_n: 5
+  min_valid: 3
+
+  # Tell the function which columns to use (defaults shown explicitly)
+  participant_col: "participant"
+  block_col: "block"
+  trial_col: "trial_num"
+  value_col: "error"
+
 outputs:
   out_csv: "outputs/visual_align_all_participants.csv"
+  out_csv_recal: "outputs/visual_align_pre_post_error.csv" 
   fig_path_mean: "outputs/figures/visual_align_mean_error"
   fig_path_ve: "outputs/figures/visual_align_ve"
+  fig_path_recal: "outputs/figures/visual_align_recal"
   fig_formats: ["png", "svg"]

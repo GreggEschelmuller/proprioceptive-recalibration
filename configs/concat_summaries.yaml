@@ -1,0 +1,14 @@
+out_csv: outputs/all_configs_recalibration_summary.csv
+
+# choose one:
+group_col: config   # or "study" or "condition"
+
+inputs:
+  - label: vibration_align
+    path: outputs/vibration_align_recalibration_summary.csv
+  - label: vibration_noVF_align
+    path: outputs/vibration_noVF_align_recalibration_summary.csv
+  - label: visual_align
+    path: outputs/visual_align_recalibration_summary.csv
+  - label: visual_noVF_align
+    path: outputs/visual_noVF_align_recalibration_summary.csv

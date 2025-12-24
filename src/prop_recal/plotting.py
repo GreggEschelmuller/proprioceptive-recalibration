@@ -9,6 +9,7 @@ import yaml
 import sys
 from pathlib import Path
 from matplotlib.figure import Figure
+from prop_recal.stats import bootstrap_mean_ci
 
 # plot parameters
 plt.rcParams.update({
@@ -90,7 +91,7 @@ def save_figure_multi_format(
         print(f"Saved: {out_path}")
 
 
-        
+
 def plot_value_with_ci(
     summary: pd.DataFrame,
     *,
@@ -192,6 +193,156 @@ def plot_value_with_ci(
 
 
 
+def plot_recalibration(
+    df_subj: pd.DataFrame,
+    *,
+    a_col: str = "a_mean",
+    b_col: str = "b_mean",
+    diff_col: str = "diff",
+    participant_col: str = "participant",
+    block_a_label: str = "Base",
+    block_b_label: str = "Post",
+    title: str | None = None,
+    y_label: str = "Mean Error (Degrees)",
+    diff_y_label: str = "Difference Scores (Degrees)",
+    n_boot: int = 10_000,
+    ci_level: float = 0.95,
+    seed: int = 0,
+    plot_offset: float = 0.05,
+    inset_rect: tuple[float, float, float, float] = (0.75, 0.40, 0.20, 0.50),
+) -> tuple[plt.Figure, plt.Axes]:
+    """
+    Paired Base vs Post plot with inset diff-score panel, styled like your legacy figure.
 
+    Expects df_subj to contain:
+      - a_col (baseline mean)
+      - b_col (post mean)
+      - diff_col (b - a)
+    """
+    required = {a_col, b_col, diff_col}
+    missing = required - set(df_subj.columns)
+    if missing:
+        raise KeyError(f"df_subj missing columns: {sorted(missing)}")
+
+    # Keep only paired rows for the main plot
+    paired = df_subj[[participant_col, a_col, b_col, diff_col]].copy()
+    paired = paired.dropna(subset=[a_col, b_col])
+
+    base = paired[a_col].to_numpy(dtype=float)
+    post = paired[b_col].to_numpy(dtype=float)
+    diffs = paired[diff_col].to_numpy(dtype=float)
+
+    n_valid = len(base)
+    rng = np.random.default_rng(seed)
+
+    # group means
+    base_mean = float(np.mean(base)) if n_valid else np.nan
+    post_mean = float(np.mean(post)) if n_valid else np.nan
+    diff_mean = float(np.mean(diffs)) if n_valid else np.nan
+
+    # bootstrap CI for diffs (this is what your legacy inset shows)
+    diff_lo, diff_hi = bootstrap_mean_ci(diffs, n_boot=n_boot, ci=ci_level, rng=rng)
+
+    # ---- main plot ----
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    x_base, x_post = 1.0, 2.0
+
+    # subject paired lines (grey)
+    for i in range(n_valid):
+        ax.plot(
+            [x_base - plot_offset, x_post + plot_offset],
+            [base[i], post[i]],
+            color="gray",
+            alpha=0.3,
+            zorder=1,
+        )
+
+    # subject dots (blue baseline, green post)
+    ax.plot(
+        [x_base - plot_offset] * n_valid,
+        base,
+        linestyle="None",
+        marker=".",
+        markersize=10,
+        alpha=0.4,
+        label=f"{block_a_label} Bias",
+        zorder=2,
+    )
+    ax.plot(
+        [x_post + plot_offset] * n_valid,
+        post,
+        linestyle="None",
+        marker=".",
+        markersize=10,
+        alpha=0.4,
+        label=f"{block_b_label} Bias",
+        zorder=2,
+    )
+
+    # overall mean (black line + dots)
+    ax.plot(
+        [x_base, x_post],
+        [base_mean, post_mean],
+        color="black",
+        linewidth=2,
+        marker="o",
+        markersize=6,
+        label="Overall Mean",
+        zorder=3,
+    )
+
+    # formatting like legacy
+    ax.set_xlim(0.8, 3.2)
+    ax.set_xticks([x_base, x_post])
+    ax.set_xticklabels([block_a_label, block_b_label])
+    ax.set_ylabel(y_label)
+
+    if title:
+        ax.set_title(title)
+
+    ax.legend(loc="upper left", frameon=False)
+    fig.tight_layout()
+
+    # ---- inset (difference scores) ----
+    inset_ax = fig.add_axes(list(inset_rect))
+
+    # jittered x in [0.1, 0.9] like legacy
+    x_jitter = rng.uniform(0.1, 0.9, size=n_valid)
+
+    inset_ax.plot(
+        x_jitter,
+        diffs,
+        linestyle="None",
+        marker=".",
+        markersize=8,
+        alpha=0.6,
+        color="purple",
+    )
+
+    # mean diff point + vertical CI line at x=-0.4
+    inset_ax.plot(
+        -0.4,
+        diff_mean,
+        color="black",
+        marker="o",
+        markersize=5,
+        zorder=3,
+    )
+    inset_ax.plot(
+        [-0.4, -0.4],
+        [diff_lo, diff_hi],
+        color="black",
+        linewidth=2,
+        zorder=3,
+    )
+
+    inset_ax.axhline(0, color="black", linestyle="--", linewidth=1)
+    inset_ax.set_xlim(-1.0, 1.5)
+    inset_ax.set_xticks([])
+    inset_ax.set_ylabel(diff_y_label)
+    sns.despine()
+
+    return fig, ax
 
 

@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
+import warnings
 
 
 def bootstrap_mean_ci(
@@ -211,35 +214,37 @@ def mean_first_n_trials(
     trial_col: str,
     n: int = 5,
     min_valid: int = 3,
+    participant: int | None = None,
+    block: str | None = None,
 ) -> float:
     """
     Mean of the first n trials (by trial_col).
-    NaNs ignored; returns NaN if fewer than min_valid remain.
+    NaNs ignored; returns NaN if fewer than min_valid valid values remain.
     """
     for col in (trial_col, value_col):
         if col not in df.columns:
             raise KeyError(f"Missing required column '{col}'")
 
     if df.empty:
-        msg = (
-            f"No trials available for participant={participant}, block={block}"
+        warnings.warn(
+            f"No trials available for participant={participant}, block={block}",
+            RuntimeWarning,
         )
-        warnings.warn(msg, RuntimeWarning)
         return np.nan
 
     work = df.sort_values(trial_col)
-    data = work.head(n)[value_col].to_numpy(dtype=float)
+    values = work.head(n)[value_col].to_numpy(dtype=float)
     values = values[~np.isnan(values)]
 
     if len(values) < min_valid:
-        msg = (
+        warnings.warn(
             f"Insufficient valid trials ({len(values)}/{min_valid}) "
-            f"for participant={participant}, block={block}"
+            f"for participant={participant}, block={block}",
+            RuntimeWarning,
         )
-        warnings.warn(msg, RuntimeWarning)
         return np.nan
 
-    return data_mean
+    return float(values.mean())
 
 
 def summarize_recalibration_two_blocks(
