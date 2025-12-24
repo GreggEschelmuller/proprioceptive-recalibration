@@ -8,6 +8,7 @@ import math
 import yaml
 import sys
 from pathlib import Path
+from matplotlib.figure import Figure
 
 # plot parameters
 plt.rcParams.update({
@@ -39,6 +40,57 @@ plt.rcParams.update({
 })
 
 
+_RASTER_FORMATS = {"png", "jpg", "jpeg", "tif", "tiff", "bmp", "webp"}
+
+def _normalize_formats(formats) -> list[str]:
+    if formats is None:
+        return ["png"]
+
+    # If someone passes "png" or "png,svg" by mistake, recover safely.
+    if isinstance(formats, str):
+        s = formats.strip()
+        if "," in s:
+            formats = [x.strip() for x in s.split(",") if x.strip()]
+        else:
+            formats = [s]
+
+    out: list[str] = []
+    for fmt in formats:
+        fmt = str(fmt).lower().strip().lstrip(".")
+        if fmt:
+            out.append(fmt)
+    return out
+
+
+def save_figure_multi_format(
+    fig: Figure,
+    base_path: Path,
+    *,
+    formats,
+    dpi: int = 300,
+    bin_number: int | None = None,
+) -> None:
+    base_path = Path(base_path)
+
+    if bin_number is not None:
+        base_path = base_path.with_name(f"{base_path.name}_n{bin_number}")
+
+    base_path.parent.mkdir(parents=True, exist_ok=True)
+
+    formats_norm = _normalize_formats(formats)
+
+    for fmt in formats_norm:
+        out_path = base_path.with_suffix(f".{fmt}")
+
+        save_kwargs = {}
+        if fmt in _RASTER_FORMATS:
+            save_kwargs["dpi"] = dpi
+
+        fig.savefig(out_path, **save_kwargs)
+        print(f"Saved: {out_path}")
+
+
+        
 def plot_value_with_ci(
     summary: pd.DataFrame,
     *,
@@ -50,6 +102,7 @@ def plot_value_with_ci(
     title: str | None = None,
     ylim: tuple[float] | None = None, 
     out_path: Path | None = None,
+    fig_formats: list[str] = ["png"],
     dpi: int = 600,
     x_col: str | None = None,
     y_col: str = "mean",
@@ -127,11 +180,13 @@ def plot_value_with_ci(
     fig.tight_layout()
 
     if out_path is not None:
-        out_path = Path(out_path)
-        if bin_number is not None:
-            out_path = out_path.with_name(f"{out_path.stem}_n{bin_number}{out_path.suffix}")
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        fig.savefig(out_path, dpi=dpi)
+        save_figure_multi_format(
+            fig,
+            base_path=Path(out_path),
+            formats=fig_formats,
+            dpi=dpi,
+            bin_number=bin_number,
+        )
 
     return fig, ax
 

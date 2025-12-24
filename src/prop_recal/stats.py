@@ -204,3 +204,118 @@ def summarize_within_subject_ve_ci_by_trial_bin(
     )
 
 
+def mean_first_n_trials(
+    df: pd.DataFrame,
+    *,
+    value_col: str,
+    trial_col: str,
+    n: int = 5,
+    min_valid: int = 3,
+) -> float:
+    """
+    Mean of the first n trials (by trial_col).
+    NaNs ignored; returns NaN if fewer than min_valid remain.
+    """
+    for col in (trial_col, value_col):
+        if col not in df.columns:
+            raise KeyError(f"Missing required column '{col}'")
+
+    if df.empty:
+        msg = (
+            f"No trials available for participant={participant}, block={block}"
+        )
+        warnings.warn(msg, RuntimeWarning)
+        return np.nan
+
+    work = df.sort_values(trial_col)
+    data = work.head(n)[value_col].to_numpy(dtype=float)
+    values = values[~np.isnan(values)]
+
+    if len(values) < min_valid:
+        msg = (
+            f"Insufficient valid trials ({len(values)}/{min_valid}) "
+            f"for participant={participant}, block={block}"
+        )
+        warnings.warn(msg, RuntimeWarning)
+        return np.nan
+
+    return data_mean
+
+
+def summarize_recalibration_two_blocks(
+    df: pd.DataFrame,
+    *,
+    participant_col: str = "participant",
+    block_col: str = "block",
+    trial_col: str = "trial_num",
+    value_col: str = "error",
+    block_a: str,
+    block_b: str,
+    n: int = 5,
+    min_valid: int = 5,
+    diff_name: str = "diff",
+) -> pd.DataFrame:
+    """
+    Participant-level summary comparing the first N trials of two blocks.
+
+    Returns one row per participant:
+      participant, a_mean, b_mean, diff (= b - a)
+
+    Notes:
+    - NaNs propagate: if a_mean or b_mean is NaN, diff is NaN.
+    - Warnings about missing/insufficient trials should come from mean_first_n_trials().
+    """
+    # ---- validation ----
+    for col in (participant_col, block_col, trial_col, value_col):
+        if col not in df.columns:
+            raise KeyError(f"Missing required column '{col}'")
+
+    if block_a == block_b:
+        raise ValueError("block_a and block_b must be different")
+
+    rows: list[dict] = []
+
+    for pid, df_p in df.groupby(participant_col, sort=True):
+        df_a = df_p[df_p[block_col] == block_a]
+        df_b = df_p[df_p[block_col] == block_b]
+
+        a_mean = mean_first_n_trials(
+            df_a,
+            value_col=value_col,
+            trial_col=trial_col,
+            n=n,
+            min_valid=min_valid,
+            participant=int(pid) if pd.notna(pid) else None,
+            block=block_a,
+        )
+
+        b_mean = mean_first_n_trials(
+            df_b,
+            value_col=value_col,
+            trial_col=trial_col,
+            n=n,
+            min_valid=min_valid,
+            participant=int(pid) if pd.notna(pid) else None,
+            block=block_b,
+        )
+
+        diff = b_mean - a_mean if (np.isfinite(a_mean) and np.isfinite(b_mean)) else np.nan
+
+        rows.append(
+            {
+                participant_col: pid,
+                "block_a": block_a,
+                "block_b": block_b,
+                "a_mean": float(a_mean) if np.isfinite(a_mean) else np.nan,
+                "b_mean": float(b_mean) if np.isfinite(b_mean) else np.nan,
+                diff_name: float(diff) if np.isfinite(diff) else np.nan,
+            }
+        )
+
+    out = pd.DataFrame(rows).sort_values(participant_col).reset_index(drop=True)
+
+    # Optional quick sanity check:
+    # print(out[[participant_col, "a_mean", "b_mean", diff_name]].describe())
+
+    return out
+
