@@ -1,11 +1,8 @@
 # Proprioceptive Recalibration Analysis
 
 Analysis code for sensorimotor adaptation and proprioceptive recalibration experiments.
-This repository is intentionally structured as a small, configuration-driven analysis
-pipeline rather than a collection of notebooks.
 
-Each analysis is defined entirely by a YAML config file. The same code can be reused
-across different experimental conditions by changing only the config.
+Each analysis is defined  by a YAML config file. The same code can be reused across different experimental conditions by changing only the config.
 
 ---
 
@@ -94,8 +91,7 @@ The main pipeline computes:
 - Variable error (within-subject SD per bin, summarized across participants)
 - Bootstrap confidence intervals for both metrics
 
-Trials are concatenated across blocks to allow continuous plotting while still
-preserving block boundaries.
+Trials are concatenated across blocks to allow continuous plotting while still preserving block boundaries.
 
 ---
 
@@ -107,8 +103,7 @@ The recalibration analysis compares early behavior between two blocks:
 - difference scores (Block B − Block A)
 - bootstrap confidence intervals across participants
 
-Results are saved as a participant-level CSV and visualized as a paired plot with an
-embedded difference panel.
+Results are saved as a participant-level CSV and visualized as a paired plot with an embedded difference panel.
 
 ---
 
