@@ -1,14 +1,22 @@
 out_csv: outputs/all_configs_recalibration_summary.csv
 
-# choose one:
-group_col: config   # or "study" or "condition"
+# names of the columns to add
+perturbation_col: perturbation
+movement_col: movement
 
 inputs:
-  - label: vibration_align
-    path: outputs/vibration_align_recalibration_summary.csv
-  - label: vibration_noVF_align
-    path: outputs/vibration_noVF_align_recalibration_summary.csv
-  - label: visual_align
-    path: outputs/visual_align_recalibration_summary.csv
-  - label: visual_noVF_align
-    path: outputs/visual_noVF_align_recalibration_summary.csv
+  - perturbation: vibration
+    movement: align
+    path: outputs/vibration_align_pre_post_error.csv
+
+  - perturbation: vibration
+    movement: target
+    path: outputs/vibration_target_pre_post_error.csv
+
+  - perturbation: visual
+    movement: align
+    path: outputs/visual_align_pre_post_error.csv
+
+  - perturbation: visual
+    movement: target
+    path: outputs/visual_target_pre_post_error.csv             

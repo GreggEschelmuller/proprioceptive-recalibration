@@ -18,23 +18,32 @@ def main() -> None:
     cfg_path = Path(sys.argv[1])
     cfg = load_cfg(cfg_path)
 
-    group_col = cfg.get("group_col", "config")
     inputs = cfg.get("inputs", [])
     if not inputs:
         raise ValueError("No inputs provided in YAML under 'inputs'.")
 
+    perturbation_col = cfg.get("perturbation_col", "perturbation")
+    movement_col = cfg.get("movement_col", "movement")
+
     dfs: list[pd.DataFrame] = []
+
     for item in inputs:
-        label = item["label"]
+        perturbation = item["perturbation"]
+        movement = item["movement"]
         path = Path(item["path"])
+
         if not path.exists():
             raise FileNotFoundError(f"Missing input CSV: {path}")
 
         df = pd.read_csv(path)
 
-        # add grouping column (and keep provenance)
-        df[group_col] = label
-        df.insert(0, group_col, df.pop(group_col))  # move to front
+        # add factor columns
+        df[perturbation_col] = perturbation
+        df[movement_col] = movement
+
+        # move to front for convenience
+        df.insert(0, movement_col, df.pop(movement_col))
+        df.insert(0, perturbation_col, df.pop(perturbation_col))
 
         dfs.append(df)
 
@@ -46,7 +55,7 @@ def main() -> None:
 
     print(f"Saved: {out_path}")
     print("Shape:", out.shape)
-    print(out[group_col].value_counts(dropna=False))
+    print(out.groupby([perturbation_col, movement_col]).size())
 
 
 if __name__ == "__main__":
