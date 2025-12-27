@@ -72,6 +72,9 @@ outputs:
   fig_path_mean: "outputs/figures/vibration_target_mean_error"
   fig_path_ve: "outputs/figures/vibration_target_ve"
   fig_path_recal: "outputs/figures/vibration_target_recal"
-  fig_path_recal_ve: "outputs/figures/vibration_target_ve_recal" 
+  fig_path_recal_ve: "outputs/figures/vibration_target_ve_recal"
+  fig_path_trial_plus_recal: "outputs/figures/vibration_target_dual_fig"
   fig_formats: ["png", "svg"]
 
+combined_figure:
+  enabled: true

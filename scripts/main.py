@@ -4,7 +4,6 @@ from pathlib import Path
 import yaml
 from prop_recal.pipelines.run import run  # pipeline entrypoint
 
-
 def load_config(path: Path) -> dict:
     return yaml.safe_load(path.read_text())
 

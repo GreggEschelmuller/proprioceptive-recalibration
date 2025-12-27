@@ -73,4 +73,9 @@ outputs:
   fig_path_ve: "outputs/figures/visual_target_ve"
   fig_path_recal: "outputs/figures/visual_target_recal"
   fig_path_recal_ve: "outputs/figures/visual_target_ve_recal"
+  fig_path_trial_plus_recal: "outputs/figures/visual_target_dual_fig"
   fig_formats: ["png", "svg"]
+
+
+combined_figure:
+  enabled: true

@@ -8,6 +8,7 @@ from prop_recal.preprocess import apply_filters
 
 from prop_recal.pipelines.trial_curves import run_trial_curve_plots
 from prop_recal.pipelines.recalibration import run_recalibration_first_n
+from prop_recal.pipelines.combined_fig import run_trial_curve_and_recalibration_figure
 
 
 def run(cfg: dict) -> pd.DataFrame:
@@ -33,6 +34,9 @@ def run(cfg: dict) -> pd.DataFrame:
     # ---- analyses / figures (both always run) ----
     run_trial_curve_plots(df, cfg=cfg)
     run_recalibration_first_n(df, cfg=cfg)
+    # new (hook)
+    if cfg.get("combined_figure", {}).get("enabled", False):
+        run_trial_curve_and_recalibration_figure(df, cfg=cfg)
 
     # ---- optional: save merged data ----
     if out_csv is not None:

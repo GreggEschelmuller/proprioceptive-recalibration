@@ -69,4 +69,8 @@ outputs:
   fig_path_ve: "outputs/figures/visual_align_ve"
   fig_path_recal: "outputs/figures/visual_align_recal"
   fig_path_recal_ve: "outputs/figures/visual_align_ve_recal"
+  fig_path_trial_plus_recal: "outputs/figures/visual_align_dual_fig"
   fig_formats: ["png", "svg"]
+
+combined_figure:
+  enabled: true
