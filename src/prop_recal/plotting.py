@@ -205,6 +205,7 @@ def plot_recalibration(
     title: str | None = None,
     y_label: str = "Mean Error (Degrees)",
     diff_y_label: str = "Difference Scores (Degrees)",
+    ylim: tuple[float, float] | None = None,
     n_boot: int = 10_000,
     ci_level: float = 0.95,
     seed: int = 0,
@@ -294,6 +295,7 @@ def plot_recalibration(
 
     # formatting like legacy
     ax.set_xlim(0.8, 3.2)
+    ax.set_ylim(ylim)
     ax.set_xticks([x_base, x_post])
     ax.set_xticklabels([block_a_label, block_b_label])
     ax.set_ylabel(y_label)

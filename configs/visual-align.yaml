@@ -59,6 +59,8 @@ recalibration:
   block_col: "block"
   trial_col: "trial_num"
   value_col: "error"
+  ylim: [-12, 12]
+  ylim_ve: [0, 7]
 
 outputs:
   out_csv: "outputs/visual_align_all_participants.csv"
@@ -66,4 +68,5 @@ outputs:
   fig_path_mean: "outputs/figures/visual_align_mean_error"
   fig_path_ve: "outputs/figures/visual_align_ve"
   fig_path_recal: "outputs/figures/visual_align_recal"
+  fig_path_recal_ve: "outputs/figures/visual_align_ve_recal"
   fig_formats: ["png", "svg"]
