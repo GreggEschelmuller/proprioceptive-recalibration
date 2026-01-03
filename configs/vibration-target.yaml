@@ -17,10 +17,10 @@ participants:
   - 14
   - 15
 blocks:
-  - Baseline_VF
-  - Baseline
-  - Exposure
-  - Post
+  Baseline_VF: "Baseline (Visual Feedback)"
+  Baseline: "Baseline (No Feedback)"
+  Exposure: "Perturbation Exposure"
+  Post: "Post"
 
 trials_per_block: 100 
 bin_size: 5
@@ -74,6 +74,7 @@ outputs:
   fig_path_recal: "outputs/figures/vibration_target_recal"
   fig_path_recal_ve: "outputs/figures/vibration_target_ve_recal"
   fig_path_trial_plus_recal: "outputs/figures/vibration_target_dual_fig"
+  fig_path_trial_plus_recal_ve: "outputs/figures/vibration_target_dual_ve_fig"
   fig_formats: ["png", "svg"]
 
 combined_figure:

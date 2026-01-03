@@ -17,10 +17,10 @@ participants:
   - 15
   - 16
 blocks:
-  - tf_baseline
-  - nf_baseline
-  - main
-  - post
+  tf_baseline: "Baseline (Visual Feedback)"
+  nf_baseline: "Baseline (No Feedback)"
+  main: "Perturbation Exposure"
+  post: "Post"
 
 
 trials_per_block: 100 
@@ -74,6 +74,7 @@ outputs:
   fig_path_recal: "outputs/figures/visual_target_recal"
   fig_path_recal_ve: "outputs/figures/visual_target_ve_recal"
   fig_path_trial_plus_recal: "outputs/figures/visual_target_dual_fig"
+  fig_path_trial_plus_recal_ve: "outputs/figures/visual_target_dual_ve_fig"
   fig_formats: ["png", "svg"]
 
 

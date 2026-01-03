@@ -11,7 +11,10 @@ from prop_recal.stats import (
 
 
 def run_trial_curve_plots(df: pd.DataFrame, *, cfg: dict) -> None:
-    blocks = list(cfg["blocks"])
+    blocks_dict: dict[str, str] = cfg["blocks"]
+    blocks: list[str] = list(blocks_dict.keys())
+    block_labels: dict[str, str] = blocks_dict
+
     plot_cfg = cfg.get("trial_plot", {})
     outputs_cfg = cfg.get("outputs", {})
 
@@ -62,6 +65,7 @@ def run_trial_curve_plots(df: pd.DataFrame, *, cfg: dict) -> None:
         summary_mean,
         block_col="block",
         block_order=blocks,
+        block_labels=block_labels,  
         trials_per_block=trials_per_block,
         y_label=plot_cfg.get("ylabel_mean", "Constant error (degrees)"),
         x_label=xlabel,
@@ -80,6 +84,7 @@ def run_trial_curve_plots(df: pd.DataFrame, *, cfg: dict) -> None:
         summary_ve,
         block_col="block",
         block_order=blocks,
+        block_labels=block_labels,
         trials_per_block=trials_per_block,
         y_label=plot_cfg.get("ylabel_ve", "Variable error (SD, degrees)"),
         x_label=xlabel,

@@ -10,6 +10,8 @@ import sys
 from pathlib import Path
 from matplotlib.figure import Figure
 from prop_recal.stats import bootstrap_mean_ci
+from collections.abc import Mapping
+
 
 # plot parameters
 plt.rcParams.update({
@@ -96,6 +98,7 @@ def plot_value_with_ci(
     *,
     block_col: str = "block",
     block_order: list[str],
+    block_labels: Mapping[str, str] | None = None,  
     trials_per_block: int = 100,
     y_label: str = "Value",
     x_label: str = "Trial (concatenated across blocks)",
@@ -113,7 +116,6 @@ def plot_value_with_ci(
     figsize: tuple[float, float] = (8, 5),
     ax: plt.Axes | None = None,
 ):
-
     if x_col is None:
         if "_global_trial" in summary.columns:
             x_col = "_global_trial"
@@ -127,6 +129,9 @@ def plot_value_with_ci(
     if missing:
         raise KeyError(f"summary missing columns: {sorted(missing)}")
 
+    # normalize mapping
+    labels = dict(block_labels or {})
+
     created_fig = False
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize)
@@ -138,23 +143,26 @@ def plot_value_with_ci(
         sub = summary[summary[block_col] == block].sort_values(x_col)
         if sub.empty:
             continue
+
         x = sub[x_col].to_numpy()
         y = sub[y_col].to_numpy()
         lo = sub[ci_lo_col].to_numpy()
         hi = sub[ci_hi_col].to_numpy()
 
-        ax.plot(x, y, label=str(block))
-        ax.fill_between(x, lo, hi, alpha=alpha_band)
+        ax.plot(x, y, label=labels.get(block, str(block)))
+        ax.fill_between(x, lo, hi, alpha=alpha_band, label="_nolegend_")
 
     for i in range(1, len(block_order)):
-        ax.axvline(i * trials_per_block + 0.5, linestyle="--", linewidth=1)
+        ax.axvline(i * trials_per_block + 0.5, linestyle="--", linewidth=1, label="_nolegend_")
 
     if ylim:
         ax.set_ylim(ylim)
 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
-    ax.legend(title=block_col)
+
+    ax.legend(loc="upper left")
+
     if title:
         ax.set_title(title)
 
@@ -271,6 +279,7 @@ def plot_trial_and_recalibration(
     summary: pd.DataFrame,
     df_subj: pd.DataFrame,
     *,
+    block_labels: Mapping[str, str] | None = None, 
     block_order: list[str],
     trials_per_block: int = 100,
     figsize: tuple[float, float] = (14, 5),
@@ -280,6 +289,7 @@ def plot_trial_and_recalibration(
     plot_value_with_ci(
         summary,
         block_order=block_order,
+        block_labels=block_labels,
         trials_per_block=trials_per_block,
         ax=axs[0],
         title="Trial-wise value ± CI",
