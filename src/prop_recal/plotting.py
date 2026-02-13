@@ -16,25 +16,25 @@ from collections.abc import Mapping
 # plot parameters
 plt.rcParams.update({
     # Font settings
-    'font.size': 12,              # Base font size
+    'font.size': 16,              # Base font size
     'font.weight': 'bold',        # Bold text
     'font.family': 'sans-serif',  # Arial/Helvetica is standard for papers
     
     # Axes settings
-    'axes.labelsize': 14,         # X/Y label size
+    'axes.labelsize': 16,         # X/Y label size
     'axes.labelweight': 'bold',   # X/Y label weight
     'axes.titlesize': 16,         # Title size
     'axes.titleweight': 'bold',   # Title weight
     'axes.linewidth': 1.5,        # Thicker axes spines
     
     # Tick settings
-    'xtick.labelsize': 12,
-    'ytick.labelsize': 12,
+    'xtick.labelsize': 14,
+    'ytick.labelsize': 14,
     'xtick.major.width': 1.5,     # Thicker tick marks
     'ytick.major.width': 1.5,
     
     # Legend settings
-    'legend.fontsize': 12,
+    'legend.fontsize': 14,
     'legend.frameon': False,      # Remove the box around the legend
     
     # Output resolution
@@ -257,7 +257,7 @@ def plot_recalibration(
         # Default: create inset in the same figure using absolute figure coords (your current behavior)
         inset_ax = fig.add_axes(list(inset_rect))
 
-    x_jitter = rng.uniform(0.1, 0.9, size=n_valid)
+    x_jitter = rng.uniform(0.1, 0.4, size=n_valid)
     inset_ax.plot(x_jitter, diffs, linestyle="None", marker=".", markersize=8,
                  alpha=0.6, color="purple")
 

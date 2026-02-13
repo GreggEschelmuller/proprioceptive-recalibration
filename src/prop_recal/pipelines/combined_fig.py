@@ -31,12 +31,14 @@ def run_trial_curve_and_recalibration_figure(df: pd.DataFrame, *, cfg: dict) -> 
 
     xlabel = plot_cfg.get("xlabel", "Trials")
     ylim_trial = plot_cfg.get("ylim", None)
+    ylim_trial_ve = plot_cfg.get("ylim_ve", None)
 
     # ---- recalibration settings ----
     block_a, block_b = recal_cfg["blocks"]
     n_first = int(recal_cfg.get("first_n", 5))
     min_valid = int(recal_cfg.get("min_valid", n_first))
     ylim_recal = recal_cfg.get("ylim", None)
+    ylim_recal_ve = recal_cfg.get("ylim_ve", None)
 
     # ---- output ----
     fig_path = outputs_cfg.get("fig_path_trial_plus_recal", "reports/figures/trial_plus_recal")
@@ -160,7 +162,7 @@ def run_trial_curve_and_recalibration_figure(df: pd.DataFrame, *, cfg: dict) -> 
         y_label=plot_cfg.get("ylabel_ve", "Variable error (SD, degrees)"),
         x_label=xlabel,
         title=plot_cfg.get("title", None),
-        ylim=ylim_trial,
+        ylim=ylim_trial_ve,
         x_col="_global_trial_center",
         y_col="ve_mean",
         ci_lo_col="ve_ci_lo",
@@ -178,7 +180,7 @@ def run_trial_curve_and_recalibration_figure(df: pd.DataFrame, *, cfg: dict) -> 
         n_boot=n_boot,
         ci_level=ci_level,
         seed=seed,
-        ylim=ylim_recal,
+        ylim=ylim_recal_ve,
         inset_rect=(0.86, 0.3, 0.12, 0.5),
         ax=axs[1],
     )

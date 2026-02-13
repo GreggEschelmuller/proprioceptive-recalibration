@@ -1,0 +1,22 @@
+out_csv: outputs/all_configs_recalibration_summary_var.csv
+
+# names of the columns to add
+perturbation_col: perturbation
+movement_col: movement
+
+inputs:
+  - perturbation: vibration
+    movement: align
+    path: outputs/vibration_align_pre_post_var.csv
+
+  - perturbation: vibration
+    movement: target
+    path: outputs/vibration_target_pre_post_var.csv
+
+  - perturbation: visual
+    movement: align
+    path: outputs/visual_align_pre_post_var.csv
+
+  - perturbation: visual
+    movement: target
+    path: outputs/visual_target_pre_post_var.csv       

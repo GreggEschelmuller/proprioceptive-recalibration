@@ -94,4 +94,11 @@ def run_recalibration_first_n(df: pd.DataFrame, *, cfg: dict) -> pd.DataFrame:
         df_subj.to_csv(out_csv, index=False, na_rep="NaN")
         print(f"Saved: {out_csv}")
 
+    out_csv_var = outputs_cfg.get("out_csv_recal_var")
+    if out_csv_var:
+        out_csv_var = Path(out_csv_var)
+        out_csv_var.parent.mkdir(parents=True, exist_ok=True)
+        df_subj_ve.to_csv(out_csv_var, index=False, na_rep="NaN")
+        print(f"Saved: {out_csv_var}")
+
     return df_subj

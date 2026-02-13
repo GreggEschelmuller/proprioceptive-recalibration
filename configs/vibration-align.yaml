@@ -47,6 +47,7 @@ trial_plot:
   ylabel_mean: "Constant error (degrees)"
   ylabel_ve: "Variable error (SD, degrees)"
   ylim: [-12, 12]
+  ylim_ve: [-2, 10]
 
 # study-specific parameter (keep if used elsewhere)
 vib_trials_nf: 15
@@ -63,11 +64,12 @@ recalibration:
   trial_col: "trial_num"
   value_col: "error"
   ylim: [-12, 12] 
-  ylim_ve: [0, 7]
+  ylim_ve: [-2, 10]
 
 outputs:
   out_csv: "outputs/vibration_align_all_participants.csv"
   out_csv_recal: "outputs/vibration_align_pre_post_error.csv"
+  out_csv_recal_var: "outputs/vibration_align_pre_post_var.csv"
   fig_path_mean: "outputs/figures/vibration_align_mean_error"
   fig_path_ve: "outputs/figures/vibration_align_ve"
   fig_path_recal: "outputs/figures/vibration_align_recal"
